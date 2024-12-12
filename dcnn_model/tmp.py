@@ -159,8 +159,8 @@ for epoch in range(num_epochs):
         images, labels = images.to(device), labels.to(device)
         
         optimizer.zero_grad()
-        outputs = model(images).squeeze()  # (N, 1) -> (N,)
-        loss = criterion(outputs, labels.view(-1))  # labels를 (N,)으로 변경
+        outputs = model(images).squeeze()
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
         
@@ -169,7 +169,7 @@ for epoch in range(num_epochs):
         # 정확도 계산
         predicted = (torch.sigmoid(outputs) > 0.5).float()
         total_train += labels.size(0)
-        correct_train += (predicted == labels.view(-1)).sum().item()  # labels를 (N,)으로 변경
+        correct_train += (predicted == labels).sum().item()
         
         # 진행 상황 출력
         if (batch_idx + 1) % 10 == 0:  # 10번째 배치마다 출력
@@ -190,13 +190,13 @@ for epoch in range(num_epochs):
         for images, labels in test_loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images).squeeze()
-            loss = criterion(outputs, labels.view(-1))  # labels를 (N,)으로 변경
+            loss = criterion(outputs, labels)
             val_running_loss += loss.item()
             
             # 정확도 계산
             predicted = (torch.sigmoid(outputs) > 0.5).float()
             total_val += labels.size(0)
-            correct_val += (predicted == labels.view(-1)).sum().item()  # labels를 (N,)으로 변경
+            correct_val += (predicted == labels).sum().item()
     
     val_loss = val_running_loss / len(test_loader)
     val_accuracy = correct_val / total_val
@@ -205,4 +205,29 @@ for epoch in range(num_epochs):
     print(f"Epoch [{epoch + 1}/{num_epochs}] - "
           f"Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f} - "
           f"Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
+
+# 평가
+model.eval()
+correct = 0
+total = 0
+
+with torch.no_grad():
+    for images, labels in test_loader:
+        images, labels = images.to(device), labels.to(device)
+        outputs = model(images).squeeze()
+        predicted = (torch.sigmoid(outputs) > 0.5).float()
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+accuracy = correct / total
+print(f"Test Accuracy: {accuracy:.4f}")
+
+# 정확도와 손실 시각화
+plt.plot(train_losses, label='Train Loss')
+plt.plot(val_losses, label='Val Loss')
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend(loc='upper left')
+plt.show()
 
