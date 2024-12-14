@@ -205,4 +205,4 @@ for epoch in range(num_epochs):
     print(f"Epoch [{epoch + 1}/{num_epochs}] - "
           f"Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f} - "
           f"Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
-
+torch.save(model.state_dict(), 'dcnn_model.pth')
